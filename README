@@ -1,0 +1,58 @@
+OS final, cooperative scheduling demonstrator
+
+<<<<<<< HEAD
+making changes now on the main branch, lets see the results
+
+HELLO FROM TESTING BRANCH!
+
+=======
+>>>>>>> 5c0fb28 (uploading to github)
+Seth Baker
+Julius Pruss
+
+The point of this code is to demonstrate cooperative scheduling in the QEMU environment. Our program functions like so:
+
+We have a linker script "boot.ld" that places the .text sections of the
+object files proga.o and progb.o in the upper half of the memory of QEMU
+(the "base" of the QEMU memory starts at 0x80000000, so the "upper half" is
+at 0x84000000), keep in mind that we place progb specifically at 0x84001000
+as we want to know an exact address to look for progb, rather than have it
+be placed after proga at some address.
+
+Still in the linker script, we put the .text section of the object file 
+boot.o at 0x81000000, and then do *(.text) to include all other .text
+sections of all other object files in the project (excluding proga and progb
+as their text sections have already been placed in memory), then we place
+the .data, .bss, and .rodata parts of all object files into memory (NOTE:
+these are all placed in the "lower" part of memory, far away from proga
+and progb).
+
+When running the program, the first file that is run is the top of the
+boot.s file, the _start function, which calls main. The program enters main,
+outputs a message to the screen, then calls a function called scheduler.
+Scheduler calls a function called jump_to_proga, which runs proga via
+creating a function pointer to the address 0x84000000, and then calls it.
+
+proga is a very simple program. It initalizes a variable x to 0, then
+increments it to 10000000, printing out messages as it goes along. We also
+added a variable y that has a small while loop, acting as a way to get proga
+to run a bit longer (if it runs too fast, our output will just fly by). 
+We also created a struct called mem, which contains a few different types,
+which was used to essentially output the memory that struct sits at. We did
+this through a function called output_mem(), white creates a pointer to the
+struct, and then outputs (in hexadecimal) the memory addresses that the
+pointer points to. Then, we call a switch to b.
+
+The switch function is located in boot.s, we used a counter to make it so
+proga and progb are only run a total of 5 times. The switch function is a 
+little complicated because its written in RISCV, but essentially what is
+done is that the switch compares the value of count to 5, and if its equal
+to 5 it sends it to a function called end_main(). Otherwise, it just calls
+the other program (whichever one wasn't run last).
+
+These programs are run 5 times, and then we call the function sbi_shutdown()
+
+The code contains many comments explaining what/why something is done, and
+there are a lot of comments because this project was done by myself (Seth)
+and a partner (Julius).
+
